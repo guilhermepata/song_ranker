@@ -1,5 +1,32 @@
 import 'package:flutter/material.dart';
 import 'classes.dart';
+import 'package:percent_indicator/percent_indicator.dart';
+
+Album harryStyles = Album(title: 'Harry Styles', songNames: <String>[
+  'Meet Me in the Hallway',
+  'Sign of the Times',
+  'Carolina',
+  'Two Ghosts',
+  'Sweet Creature',
+  'Only Angel',
+  'Kiwi',
+  'Ever Since New York',
+  'Woman',
+  'From the Dining Table'
+]);
+
+Album fineLine = Album(title: 'Fine Line', songNames: <String>[
+  'Meet Me in the Hallway',
+  'Sign of the Times',
+  'Carolina',
+  'Two Ghosts',
+  'Sweet Creature',
+  'Only Angel',
+  'Kiwi',
+  'Ever Since New York',
+  'Woman',
+  'From the Dining Table'
+]);
 
 void main() {
   runApp(MyApp());
@@ -33,20 +60,14 @@ class _MyHomePageState extends State<MyHomePage> {
 
   int pageIndex = 0;
 
+  double gutters = 16;
+  double margins = 16;
+  double tabMargins = 0;
+  bool isLandscape = false;
+
   Function onEnd = () => {};
 
-  Album album = Album(<String>[
-    'Meet Me in the Hallway',
-    'Sign of the Times',
-    'Carolina',
-    'Two Ghosts',
-    'Sweet Creature',
-    'Only Angel',
-    'Kiwi',
-    'Ever Since New York',
-    'Woman',
-    'From the Dining Table'
-  ]);
+  Album album = harryStyles;
 
   void onTapFirst() {
     setState(() {
@@ -78,30 +99,92 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    if (MediaQuery.of(context).size.width > 600) {
+      setState(() {
+        tabMargins = (MediaQuery.of(context).size.width - 600) / 2;
+      });
+      if (MediaQuery.of(context).size.width > 720) {
+        setState(() {
+          margins = 24;
+        });
+        if (MediaQuery.of(context).size.width > 1000)
+          setState(() {
+            gutters = 72;
+          });
+      }
+    }
+    if (MediaQuery.of(context).size.width > MediaQuery.of(context).size.height)
+      setState(() {
+        isLandscape = true;
+      });
     return DefaultTabController(
       length: 2,
       initialIndex: 0,
       child: Scaffold(
-        drawer: Drawer(),
+        drawer: buildDrawer(),
         appBar: AppBar(
+          backwardsCompatibility: false,
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black54,
+          brightness: Brightness.light,
           actions: [
             IconButton(
+                color: Colors.black54,
                 icon: Icon(Icons.undo),
                 onPressed: () => setState(() {
                       album.build();
                     }))
           ],
-          bottom: TabBar(
-            tabs: [
-              Tab(
-                text: 'CONTESTS',
-              ),
-              Tab(text: 'RANKING')
-            ],
+          bottom: PreferredSize(
+            preferredSize: Size.fromHeight(48),
+            child: Column(
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(
+                      left: gutters, right: tabMargins * 2 - gutters),
+                  child: TabBar(
+                    labelStyle: Theme.of(context)
+                        .textTheme
+                        .button
+                        .apply(fontWeightDelta: 1),
+                    labelColor: Colors.black,
+                    indicatorSize: TabBarIndicatorSize.label,
+                    indicatorPadding: EdgeInsets.only(bottom: 8),
+                    tabs: [
+                      Tab(
+                        text: 'Contests',
+                      ),
+                      Tab(text: 'Ranking')
+                    ],
+                  ),
+                ),
+                LinearPercentIndicator(
+                    width: MediaQuery.of(context).size.width,
+                    lineHeight: 4,
+                    padding: EdgeInsets.zero,
+                    curve: Curves.fastOutSlowIn,
+                    linearStrokeCap: LinearStrokeCap.butt,
+                    percent: album.progress,
+                    animateFromLastPercent: true,
+                    animation: true,
+                    animationDuration: 250,
+                    backgroundColor: Colors.pinkAccent.withOpacity(0.3),
+                    progressColor: Colors.pinkAccent)
+              ],
+            ),
           ),
         ),
         body: TabBarView(
-          children: [buildComparePage(), buildRankPage()],
+          children: [
+            Padding(
+              padding: EdgeInsets.only(left: gutters, right: gutters),
+              child: buildComparePage(),
+            ),
+            Padding(
+              padding: EdgeInsets.only(left: gutters, right: gutters),
+              child: buildRankPage(),
+            )
+          ],
         ),
         // bottomNavigationBar: BottomNavigationBar(
         //   showUnselectedLabels: false,
@@ -121,61 +204,104 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  AnimatedOpacity buildComparePage() {
-    return AnimatedOpacity(
-        curve: Curves.easeOutSine,
-        opacity: cardOpacity,
-        onEnd: onEnd,
-        duration: Duration(milliseconds: 250),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.max,
-          children: <Widget>[
-            SongCard(
-              name: album.songNames[album.nextCombat.first],
-              onTap: onTapFirst,
+  Drawer buildDrawer() => Drawer(
+        child: ListView(
+          children: [
+            DrawerHeader(
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Choose album',
+                    style: Theme.of(context)
+                        .textTheme
+                        .subtitle1
+                        .apply(color: Colors.white),
+                  ),
+                ],
+              ),
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
             ),
-            SongCard(
-              name: album.songNames[album.nextCombat.last],
-              onTap: onTapSecond,
-            ),
+            buildAlbumTile(harryStyles),
+            buildAlbumTile(fineLine),
           ],
-        ));
+        ),
+      );
+
+  ListTile buildAlbumTile(Album album) {
+    return ListTile(
+        title: Text(album.title),
+        onTap: () {
+          setState(() {
+            this.album = album;
+          });
+        });
   }
 
-  Stack buildRankPage() {
-    return Stack(
-      children: [
-        Column(
-          children: [
-            Expanded(
-              child: Container(
-                color: Colors.transparent,
-              ),
-            )
-          ],
+  Widget buildComparePage() {
+    List<Widget> children = <Widget>[
+      SongCard(
+        name: album.songNames[album.nextCombat.first],
+        onTap: onTapFirst,
+      ),
+      SizedBox(
+        height: margins,
+        width: margins,
+      ),
+      SongCard(
+        name: album.songNames[album.nextCombat.last],
+        onTap: onTapSecond,
+      ),
+    ];
+
+    return Padding(
+      padding: EdgeInsets.only(top: margins, bottom: margins),
+      child: AnimatedOpacity(
+          curve: Curves.easeOutSine,
+          opacity: cardOpacity,
+          onEnd: onEnd,
+          duration: Duration(milliseconds: 250),
+          child: isLandscape
+              ? Row(
+                  children: children,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.max,
+                )
+              : Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.max,
+                  children: children)),
+    );
+  }
+
+  Widget buildRankPage() {
+    return Padding(
+      padding: EdgeInsets.only(top: margins),
+      child: Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
         ),
-        SingleChildScrollView(
-          child: Card(
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: buildRankTiles(),
-            ),
-          ),
+        margin: EdgeInsets.zero,
+        child: ListView(
+          children: buildRankTiles(),
         ),
-      ],
+      ),
     );
   }
 
   List<Widget> buildRankTiles() {
     var result = <Widget>[];
-    for (var i = 0; i < album.songs.length; i++) {
-      if (album.topList[i].contests.length > album.songs.length / 2)
+    if (album.progress > 0.3) {
+      for (var i = 0; i < album.songs.length; i++) {
         result.add(RankTile(
             index: i,
             title: album.topList[i].name,
             score: album.topList[i].score));
+      }
     }
     return result;
   }
@@ -196,7 +322,7 @@ class RankTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      dense: true,
+      // dense: true,
       leading: Padding(
         padding: const EdgeInsets.all(0),
         child: Container(
@@ -209,7 +335,7 @@ class RankTile extends StatelessWidget {
         ),
       ),
       title: Text(title, style: Theme.of(context).textTheme.subtitle1),
-      subtitle: Text((score * 100).round().toString()),
+      // subtitle: Text((score * 100).round().toString()),
     );
   }
 }
@@ -228,21 +354,28 @@ class SongCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Card(
+        margin: EdgeInsets.zero,
         clipBehavior: Clip.hardEdge,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: InkWell(
           // splashColor: Colors.greenAccent,
           onTap: onTap,
-          child: Row(
+          child: Column(
             mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Flexible(
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Text(name,
-                      style: Theme.of(context).textTheme.headline3,
-                      textAlign: TextAlign.left),
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  Flexible(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Text(name,
+                          style: Theme.of(context).textTheme.headline3,
+                          textAlign: TextAlign.left),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

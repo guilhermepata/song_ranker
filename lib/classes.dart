@@ -1,12 +1,15 @@
+import 'package:flutter/material.dart';
+
 class Album {
-  final List<Song> songs = List<Song>();
+  final List<Song> songs = <Song>[];
   final List<String> songNames;
+  final String title;
   final String artUrl;
   final Set<Set<int>> pairs = Set<Set<int>>();
-  final List<Set<int>> possiblePairs = List<Set<int>>();
+  final List<Set<int>> possiblePairs = <Set<int>>[];
   int index = 0;
 
-  Album(this.songNames, {this.artUrl = ''}) {
+  Album({@required this.title, @required this.songNames, this.artUrl = ''}) {
     for (var i = 0; i < songNames.length; i++) {
       songs.add(Song(songNames[i]));
       for (var j = i + 1; j < songNames.length; j++) {
@@ -34,7 +37,7 @@ class Album {
   }
 
   List<Song> get topList {
-    List<Song> list = List<Song>();
+    List<Song> list = <Song>[];
     list.addAll(songs);
     list.sort((a, b) => ((b.score - a.score) * 100).round());
     return list;
@@ -68,6 +71,11 @@ class Album {
         songNames[nextCombat.first] +
         ' vs ' +
         songNames[nextCombat.last]);
+  }
+
+  static Album join(Album a, Album b) {
+    //TODO
+    return a;
   }
 }
 
