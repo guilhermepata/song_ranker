@@ -16,16 +16,17 @@ Album harryStyles = Album(title: 'Harry Styles', songNames: <String>[
 ]);
 
 Album fineLine = Album(title: 'Fine Line', songNames: <String>[
-  'Meet Me in the Hallway',
-  'Sign of the Times',
-  'Carolina',
-  'Two Ghosts',
-  'Sweet Creature',
-  'Only Angel',
-  'Kiwi',
-  'Ever Since New York',
-  'Woman',
-  'From the Dining Table'
+  "Golden",
+  "Watermelon Sugar",
+  "Adore You",
+  "Lights Up",
+  "Cherry",
+  "Falling",
+  "To Be So Lonely",
+  "She",
+  "Sunflower, Vol. 6",
+  "Canyon Moon",
+  "Treat People with Kindness"
 ]);
 
 void main() {
