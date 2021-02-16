@@ -26,7 +26,8 @@ Album fineLine = Album(title: 'Fine Line', songNames: <String>[
   "She",
   "Sunflower, Vol. 6",
   "Canyon Moon",
-  "Treat People with Kindness"
+  "Treat People with Kindness",
+  "Fine Line"
 ]);
 
 void main() {
