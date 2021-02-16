@@ -30,6 +30,89 @@ Album fineLine = Album(title: 'Fine Line', songNames: <String>[
   "Fine Line"
 ]);
 
+Album upAllNight = Album(title: 'Up All Night', songNames: [
+  "What Makes You Beautiful",
+  "Gotta Be You",
+  "One Thing",
+  "More Than This",
+  "Up All Night",
+  "I Wish",
+  "Tell Me a Lie",
+  "Taken",
+  "I Want",
+  "Everything About You",
+  "Same Mistakes",
+  "Save You Tonight",
+  "Stand Up",
+  "Moments",
+  "Another World",
+  "Na Na Na",
+  "I Should Have Kissed You",
+]);
+
+Album takeMeHome = Album(title: 'Take Me Home', songNames: [
+  "Live While We're Young",
+  "Kiss You",
+  "Little Things",
+  "C'mon, C'mon",
+  "Last First Kiss",
+  "Heart Attack",
+  "Rock Me",
+  "Change My Mind",
+  "I Would",
+  "Over Again",
+  "Back for You",
+  "They Don't Know About Us"
+]);
+
+Album midnightMemories = Album(title: 'Midnight Memories', songNames: [
+  "Best Song Ever",
+  "Story of My Life",
+  "Diana",
+  "Midnight Memories",
+  "You & I",
+  "Don't Forget Where You Belong",
+  "Strong",
+  "Happily",
+  "Right Now",
+  "Little Black Dress",
+  "Through The Dark",
+  "Something Great",
+  "Little White Lies",
+  "Better Than Words",
+]);
+
+Album four = Album(title: 'Four', songNames: [
+  "Steal My Girl",
+  "Ready to Run",
+  "Where Do Broken Hearts Go",
+  "18",
+  "Girl Almighty",
+  "Fool's Gold",
+  "Night Changes",
+  "No Control",
+  "Fireproof",
+  "Spaces",
+  "Stockholm Syndrome",
+  "Clouds"
+]);
+
+Album madeInTheAm = Album(title: 'Made In The AM', songNames: [
+  "Hey Angel",
+  "Drag Me Down",
+  "Perfect",
+  "Infinity",
+  "End of the Day",
+  "If I Could Fly",
+  "Long Way Down",
+  "Never Enough",
+  "Olivia",
+  "What a Feeling",
+  "Love You Goodbye",
+  "I Want to Write You a Song",
+  "History"
+]);
+
 void main() {
   runApp(MyApp());
 }
@@ -61,6 +144,7 @@ class _MyHomePageState extends State<MyHomePage> {
   double cardOpacity = 1;
 
   int pageIndex = 0;
+  int albumIndex = 0;
 
   double gutters = 16;
   double margins = 16;
@@ -99,6 +183,20 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  void onUndo() {
+    setState(() {
+      onEnd = () => {
+            setState(() {
+              album.undoLastCombat();
+              onEnd = () => {};
+              cardOpacity = 1;
+            })
+          };
+
+      cardOpacity = 0;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     if (MediaQuery.of(context).size.width > 600) {
@@ -114,10 +212,20 @@ class _MyHomePageState extends State<MyHomePage> {
             gutters = 72;
           });
       }
+    } else {
+      setState(() {
+        tabMargins = 0;
+        margins = 16;
+        gutters = 16;
+      });
     }
     if (MediaQuery.of(context).size.width > MediaQuery.of(context).size.height)
       setState(() {
         isLandscape = true;
+      });
+    else
+      setState(() {
+        isLandscape = false;
       });
     return DefaultTabController(
       length: 2,
@@ -131,19 +239,20 @@ class _MyHomePageState extends State<MyHomePage> {
           brightness: Brightness.light,
           actions: [
             IconButton(
-                color: Colors.black54,
-                icon: Icon(Icons.undo),
-                onPressed: () => setState(() {
-                      album.build();
-                    }))
+              color: Colors.black54,
+              icon: Icon(Icons.undo),
+              onPressed: onUndo,
+            )
           ],
           bottom: PreferredSize(
             preferredSize: Size.fromHeight(48),
             child: Column(
               children: [
                 Padding(
-                  padding: EdgeInsets.only(
-                      left: gutters, right: tabMargins * 2 - gutters),
+                  padding: tabMargins > 0
+                      ? EdgeInsets.only(
+                          left: gutters, right: tabMargins * 2 - gutters)
+                      : EdgeInsets.zero,
                   child: TabBar(
                     labelStyle: Theme.of(context)
                         .textTheme
@@ -182,10 +291,7 @@ class _MyHomePageState extends State<MyHomePage> {
               padding: EdgeInsets.only(left: gutters, right: gutters),
               child: buildComparePage(),
             ),
-            Padding(
-              padding: EdgeInsets.only(left: gutters, right: gutters),
-              child: buildRankPage(),
-            )
+            buildRankPage()
           ],
         ),
         // bottomNavigationBar: BottomNavigationBar(
@@ -228,19 +334,27 @@ class _MyHomePageState extends State<MyHomePage> {
                 color: Colors.blue,
               ),
             ),
-            buildAlbumTile(harryStyles),
-            buildAlbumTile(fineLine),
+            buildAlbumTile(harryStyles, 0),
+            buildAlbumTile(fineLine, 1),
+            buildAlbumTile(upAllNight, 2),
+            buildAlbumTile(takeMeHome, 3),
+            buildAlbumTile(midnightMemories, 4),
+            buildAlbumTile(four, 5),
+            buildAlbumTile(madeInTheAm, 6),
           ],
         ),
       );
 
-  ListTile buildAlbumTile(Album album) {
+  ListTile buildAlbumTile(Album album, index) {
     return ListTile(
+        selected: index == albumIndex,
         title: Text(album.title),
         onTap: () {
           setState(() {
             this.album = album;
+            albumIndex = index;
           });
+          Navigator.of(context).pop();
         });
   }
 
@@ -281,17 +395,24 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget buildRankPage() {
-    return Padding(
-      padding: EdgeInsets.only(top: margins),
-      child: Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+    return ListView(
+      children: [
+        SizedBox(height: margins),
+        Padding(
+          padding: EdgeInsets.only(left: gutters, right: gutters),
+          child: Card(
+            clipBehavior: Clip.hardEdge,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            margin: EdgeInsets.zero,
+            child: Column(
+              children: buildRankTiles(),
+            ),
+          ),
         ),
-        margin: EdgeInsets.zero,
-        child: ListView(
-          children: buildRankTiles(),
-        ),
-      ),
+        SizedBox(height: margins),
+      ],
     );
   }
 

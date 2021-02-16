@@ -5,8 +5,9 @@ class Album {
   final List<String> songNames;
   final String title;
   final String artUrl;
-  final Set<Set<int>> pairs = Set<Set<int>>();
+  final List<Set<int>> pairs = <Set<int>>[];
   final List<Set<int>> possiblePairs = <Set<int>>[];
+  bool winnerWasFirst = false;
   int index = 0;
 
   Album({@required this.title, @required this.songNames, this.artUrl = ''}) {
@@ -33,7 +34,10 @@ class Album {
   }
 
   double get progress {
-    return pairs.length / possiblePairs.length;
+    if (pairs.length < possiblePairs.length)
+      return pairs.length / possiblePairs.length;
+    else
+      return 1.0;
   }
 
   List<Song> get topList {
@@ -53,13 +57,22 @@ class Album {
       print(songNames[ind2] + ' won against ' + songNames[ind1]);
   }
 
+  void undoCombat(int ind1, int ind2, bool winnerWasFirst) {
+    Song.undoCombat(songs[ind1], songs[ind2], winnerWasFirst);
+  }
+
   Set<int> get nextCombat {
     return possiblePairs[index];
+  }
+
+  Set<int> get previousCombat {
+    return pairs.last;
   }
 
   void runNextCombat(bool winnerIsFirst) {
     int ind1 = nextCombat.first;
     int ind2 = nextCombat.last;
+    winnerWasFirst = winnerIsFirst;
     combat(ind1, ind2, winnerIsFirst);
     if (index < possiblePairs.length - 1) {
       index++;
@@ -71,6 +84,16 @@ class Album {
         songNames[nextCombat.first] +
         ' vs ' +
         songNames[nextCombat.last]);
+  }
+
+  void undoLastCombat() {
+    if (progress > 0) {
+      int ind1 = previousCombat.first;
+      int ind2 = previousCombat.last;
+      pairs.removeLast();
+      undoCombat(ind1, ind2, winnerWasFirst);
+      if (index > 0) index--;
+    }
   }
 
   static Album join(Album a, Album b) {
@@ -95,6 +118,13 @@ class Song {
     if (won) contests[song].wins++;
   }
 
+  removeCombat(Song song, bool won) {
+    if (contests.containsKey(song) && contests[song].total > 0) {
+      contests[song].total--;
+      if (won) contests[song].wins--;
+    }
+  }
+
   double get score {
     var keys = contests.keys;
     var result = 0.0;
@@ -110,6 +140,11 @@ class Song {
   static combat(Song s1, Song s2, bool winnerIsFirst) {
     s1.addCombat(s2, winnerIsFirst);
     s2.addCombat(s1, !winnerIsFirst);
+  }
+
+  static undoCombat(Song s1, Song s2, bool winnerWasFirst) {
+    s1.removeCombat(s2, winnerWasFirst);
+    s2.removeCombat(s1, !winnerWasFirst);
   }
 
   @override
